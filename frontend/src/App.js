@@ -150,7 +150,7 @@ function App() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
-  
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [step, activeSectionIndex]);
@@ -260,8 +260,14 @@ function App() {
         <Box sx={{ mb: 3, position: 'sticky', top: 0, backgroundColor: 'background.paper', zIndex: 1, pt: 2, px: { xs: 1, sm: 2 } }}>
           <Typography variant="h2" sx={{ mb: 1 }}>Team Diagnostic</Typography>
           <Stepper activeStep={activeSectionIndex} alternativeLabel>
-            {sections.map((sec) => <Step key={sec.title}><StepLabel>{sec.title}</StepLabel></Step>)}
-          </Stepper>
+  {sections.map((sec) => (
+    <Step key={sec.title}>
+      <StepLabel
+        sx={{ '& .MuiStepLabel-label': { display: 'none' } }} // hide label text
+      />
+    </Step>
+  ))}
+</Stepper>
         </Box>
         <Box>
           <Typography variant="h5">{currentSection.title}</Typography>
