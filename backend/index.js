@@ -48,16 +48,13 @@ db.query(createTableSQL)
 // --- GOOGLE SHEETS HELPER FUNCTION ---
 async function appendToSheet(data) {
   try {
-    // ====== THIS IS THE FINAL FIX ======
-    // Construct a path that goes UP one directory from the current file's location
-    // and then finds credentials.json. This matches Render's file structure.
-    const credentialsPath = path.join(__dirname, '..', 'credentials.json');
+    // Parse the credentials from environment variable
+    const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS);
     
     const auth = new google.auth.GoogleAuth({
-      keyFile: credentialsPath, // Use the new, correct path
+      credentials: credentials, // Pass parsed credentials directly
       scopes: 'https://www.googleapis.com/auth/spreadsheets',
     });
-    // ===================================
 
     const client = await auth.getClient();
     const sheets = google.sheets({ version: 'v4', auth: client });
