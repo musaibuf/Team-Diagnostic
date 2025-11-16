@@ -9,6 +9,9 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
+// ====== THIS IS THE FIX ======
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
 export default function ActionableInsights() {
   const { filters } = useOutletContext();
   const [stats, setStats] = useState(null);
@@ -18,7 +21,8 @@ export default function ActionableInsights() {
   const fetchStats = useCallback(() => {
     setLoading(true);
     const params = new URLSearchParams(filters).toString();
-    axios.get(`http://localhost:3001/api/dashboard-stats?${params}`)
+    // Use the API_URL variable
+    axios.get(`${API_URL}/api/dashboard-stats?${params}`)
       .then(response => setStats(response.data))
       .finally(() => setLoading(false));
   }, [filters]);
@@ -62,7 +66,6 @@ export default function ActionableInsights() {
         callbacks: {
           title: () => '', 
           label: function(context) {
-            const count = context.parsed.x; // Now it's percentage, but we need count for tooltip
             const actualCount = chartType === 'strengths' 
               ? (stats?.topStrengths || [])[context.dataIndex]?.yesCount 
               : (stats?.topProblems || [])[context.dataIndex]?.noCount;

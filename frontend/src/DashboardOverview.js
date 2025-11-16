@@ -13,6 +13,9 @@ import GroupIcon from '@mui/icons-material/Group';
 
 ChartJS.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
+// ====== THIS IS THE FIX ======
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
 export default function DashboardOverview() {
   const { filters } = useOutletContext();
   const [stats, setStats] = useState(null);
@@ -21,7 +24,8 @@ export default function DashboardOverview() {
   const fetchStats = useCallback(() => {
     setLoading(true);
     const params = new URLSearchParams(filters).toString();
-    axios.get(`http://localhost:3001/api/dashboard-stats?${params}`)
+    // Use the API_URL variable
+    axios.get(`${API_URL}/api/dashboard-stats?${params}`)
       .then(response => setStats(response.data))
       .finally(() => setLoading(false));
   }, [filters]);

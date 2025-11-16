@@ -9,6 +9,9 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
+// ====== THIS IS THE FIX ======
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
+
 export default function DepartmentComparison() {
   const { filters } = useOutletContext();
   const [stats, setStats] = useState(null);
@@ -17,7 +20,8 @@ export default function DepartmentComparison() {
   const fetchStats = useCallback(() => {
     setLoading(true);
     const params = new URLSearchParams({ ...filters, department: 'all' }).toString();
-    axios.get(`http://localhost:3001/api/dashboard-stats?${params}`)
+    // Use the API_URL variable
+    axios.get(`${API_URL}/api/dashboard-stats?${params}`)
       .then(response => setStats(response.data))
       .finally(() => setLoading(false));
   }, [filters]);
