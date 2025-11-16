@@ -1,10 +1,10 @@
-require('dotenv').config(); // Reads .env file for local development
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const qrcode = require('qrcode');
 const { google } = require('googleapis');
 const { formatInTimeZone } = require('date-fns-tz');
-const { Pool } = require('pg'); // Use the pg Pool for PostgreSQL
+const { Pool } = require('pg');
 const path = require('path'); // <-- NEW: Import the 'path' module
 
 const app = express();
@@ -31,18 +31,13 @@ const questionMap = {
 const db = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: false // Required for Render's secure connections
+    rejectUnauthorized: false
   }
 });
 
-// Create table if it doesn't exist
 const createTableSQL = `CREATE TABLE IF NOT EXISTS responses (
-  id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL,
-  department TEXT NOT NULL,
-  organization TEXT NOT NULL,
-  location TEXT NOT NULL,
-  answers JSONB NOT NULL,
+  id SERIAL PRIMARY KEY, name TEXT NOT NULL, department TEXT NOT NULL,
+  organization TEXT NOT NULL, location TEXT NOT NULL, answers JSONB NOT NULL,
   submitted_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 )`;
 db.query(createTableSQL)
@@ -57,7 +52,7 @@ async function appendToSheet(data) {
     // We construct an absolute path to the credentials file.
     // '__dirname' is a Node.js variable that gives the directory of the current file.
     const credentialsPath = path.join(__dirname, 'credentials.json');
-
+    
     const auth = new google.auth.GoogleAuth({
       keyFile: credentialsPath, // Use the new, absolute path
       scopes: 'https://www.googleapis.com/auth/spreadsheets',
@@ -126,7 +121,7 @@ app.get('/api/dashboard-stats', async (req, res) => {
   const { department, location } = req.query;
   let sql = "SELECT department, answers FROM responses";
   const params = [];
-  const whereClauses = []; // Define whereClauses here
+  const whereClauses = [];
   let paramIndex = 1;
 
   if (department && department !== 'all') {
@@ -154,7 +149,6 @@ app.get('/api/dashboard-stats', async (req, res) => {
     }
 
     const processRows = (filteredRows) => {
-      // This inner function is unchanged
       const questionCounts = {};
       for (let i = 1; i <= 25; i++) { questionCounts[i] = { Yes: 0, No: 0, Maybe: 0 }; }
       const sectionCounts = { Goals: { Yes: 0, No: 0, Maybe: 0 }, Roles: { Yes: 0, No: 0, Maybe: 0 }, Procedures: { Yes: 0, No: 0, Maybe: 0 }, 'Internal Relationships': { Yes: 0, No: 0, Maybe: 0 }, 'External Relationships': { Yes: 0, No: 0, Maybe: 0 } };
