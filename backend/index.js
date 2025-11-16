@@ -5,6 +5,7 @@ const qrcode = require('qrcode');
 const { google } = require('googleapis');
 const { formatInTimeZone } = require('date-fns-tz');
 const { Pool } = require('pg'); // Use the pg Pool for PostgreSQL
+const path = require('path'); // <-- NEW: Import the 'path' module
 
 const app = express();
 
@@ -52,10 +53,17 @@ db.query(createTableSQL)
 // --- GOOGLE SHEETS HELPER FUNCTION ---
 async function appendToSheet(data) {
   try {
+    // ====== THIS IS THE FIX ======
+    // We construct an absolute path to the credentials file.
+    // '__dirname' is a Node.js variable that gives the directory of the current file.
+    const credentialsPath = path.join(__dirname, 'credentials.json');
+
     const auth = new google.auth.GoogleAuth({
-      keyFile: 'credentials.json',
+      keyFile: credentialsPath, // Use the new, absolute path
       scopes: 'https://www.googleapis.com/auth/spreadsheets',
     });
+    // =============================
+
     const client = await auth.getClient();
     const sheets = google.sheets({ version: 'v4', auth: client });
     const spreadsheetId = '1W9gykJyWD7PTp_RYmzpvvSkHNVNv4tHPj5O7He1tDXo';
@@ -82,9 +90,8 @@ app.post('/api/submit', async (req, res) => {
   if (!name || !department || !organization || !location || !answers) {
     return res.status(400).json({ error: 'All fields are required.' });
   }
-  // For pg, parameters are $1, $2, etc.
   const insertSQL = `INSERT INTO responses (name, department, organization, location, answers) VALUES ($1, $2, $3, $4, $5) RETURNING id`;
-  const params = [name, department, organization, location, answers]; // Pass answers object directly for JSONB
+  const params = [name, department, organization, location, answers];
   
   try {
     const result = await db.query(insertSQL, params);
@@ -119,15 +126,20 @@ app.get('/api/dashboard-stats', async (req, res) => {
   const { department, location } = req.query;
   let sql = "SELECT department, answers FROM responses";
   const params = [];
+  const whereClauses = []; // Define whereClauses here
   let paramIndex = 1;
 
   if (department && department !== 'all') {
-    sql += ` WHERE department = $${paramIndex++}`;
+    whereClauses.push(`department = $${paramIndex++}`);
     params.push(department);
   }
   if (location && location !== 'all') {
-    sql += whereClauses.length > 0 ? ` AND location = $${paramIndex++}` : ` WHERE location = $${paramIndex++}`;
+    whereClauses.push(`location = $${paramIndex++}`);
     params.push(location);
+  }
+
+  if (whereClauses.length > 0) {
+    sql += " WHERE " + whereClauses.join(" AND ");
   }
 
   try {
@@ -148,7 +160,7 @@ app.get('/api/dashboard-stats', async (req, res) => {
       const sectionCounts = { Goals: { Yes: 0, No: 0, Maybe: 0 }, Roles: { Yes: 0, No: 0, Maybe: 0 }, Procedures: { Yes: 0, No: 0, Maybe: 0 }, 'Internal Relationships': { Yes: 0, No: 0, Maybe: 0 }, 'External Relationships': { Yes: 0, No: 0, Maybe: 0 } };
       const sectionRanges = { Goals: [1, 4], Roles: [5, 8], Procedures: [9, 15], 'Internal Relationships': [16, 22], 'External Relationships': [23, 25] };
       filteredRows.forEach(row => {
-        const answersObj = row.answers; // No need to parse JSONB
+        const answersObj = row.answers;
         for (const qId in answersObj) {
           const answer = answersObj[qId];
           if (questionCounts[qId]) { questionCounts[qId][answer]++; }
