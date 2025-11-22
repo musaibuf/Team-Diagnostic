@@ -3,7 +3,7 @@ import axios from 'axios';
 import {
   Container, Box, Typography, TextField, Button, Radio, RadioGroup,
   FormControlLabel, FormControl, FormLabel, Paper, Stepper, Step, StepLabel,
-  Alert, CircularProgress, Select, MenuItem, InputLabel
+  Alert, CircularProgress, Select, MenuItem, InputLabel, Autocomplete
 } from '@mui/material';
 import { createTheme, ThemeProvider, responsiveFontSizes } from '@mui/material/styles';
 
@@ -130,11 +130,77 @@ const sections = [
     },
 ];
 
+// Updated Comprehensive Department List
 const departmentOptions = [
-  'Finance', 'Marketing', 'Sales', 'Human Resources', 'IT', 'Operations',
-  'Product Management', 'Customer Service', 'Research & Development', 'Legal', 'Other'
+  'Accounting',
+  'Administration',
+  'Audit',
+  'Business Development',
+  'Compliance',
+  'Corporate Social Responsibility (CSR)',
+  'Corporate Strategy',
+  'Customer Service',
+  'Data Analytics',
+  'Design',
+  'Engineering',
+  'Facilities Management',
+  'Finance',
+  'Government Relations',
+  'Health & Safety (HSE)',
+  'Human Resources',
+  'Information Technology (IT)',
+  'Internal Communications',
+  'Legal',
+  'Logistics',
+  'Maintenance',
+  'Manufacturing',
+  'Marketing',
+  'Medical Affairs',
+  'Operations',
+  'Procurement',
+  'Product Management',
+  'Project Management',
+  'Public Relations (PR)',
+  'Quality Assurance (QA)',
+  'Regulatory Affairs',
+  'Research & Development (R&D)',
+  'Risk Management',
+  'Sales',
+  'Security',
+  'Software Development',
+  'Strategic Planning',
+  'Supply Chain',
+  'Support',
+  'Taxation',
+  'Training & Development',
+  'Treasury',
+  'Other'
 ];
-const locationOptions = ['Karachi', 'Lahore', 'Islamabad'];
+
+// Updated Comprehensive Location List (Sorted with Other at end)
+const locationOptions = [
+  'Abbottabad','Ahmedpur East','Aliabad (Hunza)','Arif Wala','Attock','Badin','Bahawalnagar','Bahawalpur',
+  'Bannu','Barikot','Barkhan','Batkhela','Battagram','Bhalwal','Bhakkar','Bhimber','Bholari','Buner',
+  'Burewala','Chagai','Chakwal','Chaman','Charsadda','Chichawatni','Chiniot','Chishtian','Chitral',
+  'Dadu','Daska','Dera Ghazi Khan','Dera Ismail Khan','Dera Murad Jamali','Dipalpur','Dunyapur',
+  'Faisalabad','Farooqabad','Ferozwala','Gadani','Ghotki','Gilgit','Gojra','Gujar Khan','Gujranwala',
+  'Gujranwala Cantonment','Gujrat','Gwadar','Hafizabad','Hangu','Haripur','Haroonabad','Hasilpur',
+  'Hattar','Haveli Lakha','Hub','Hyderabad','Islamabad','Jacobabad','Jalalpur Jattan','Jampur',
+  'Jaranwala','Jatoi','Jauharabad','Jhang','Jhelum','Kabal','Kalat','Kamalia','Kamber Ali Khan',
+  'Kamoke','Kandhkot','Karachi','Kasur','Khairpur','Khanewal','Khanpur','Kharian','Khushab','Khuzdar',
+  'Kohat','Kot Abdul Malik','Kot Addu','Kot Radha Kishan','Kotli','Kotri','Lahore','Lala Musa',
+  'Larkana','Layyah','Lodhran','Loralai','Mailsi','Mandi Bahauddin','Mansehra','Mardan','Mian Channu',
+  'Mianwali','Mingora','Mirpur','Mirpur Khas','Mithi','Moro','Multan','Muridke','Muzaffargarh',
+  'Muzaffarabad','Nankana Sahib','Narowal','Nawabshah','Nowshera','Okara','Pakpattan','Panjgur',
+  'Pattoki','Peshawar','Phool Nagar','Pishin','Port Qasim','Quetta','Rahim Yar Khan','Rajanpur',
+  'Rawalakot','Rawalpindi','Renala Khurd','Sadiqabad','Sahiwal','Sambrial','Samundri','Sanghar',
+  'Sangla Hill','Sargodha','Shabqadar','Shahdadkot','Shahdadpur','Shakargarh','Sheikhupura',
+  'Shikarpur','Shujabad','Sialkot','Sibi','Skardu','Sukkur','Swabi','Swat','Talagang','Tando Adam',
+  'Tando Allahyar','Tando Muhammad Khan','Taunsa','Taxila','Thar','Thatta','Toba Tek Singh','Turbat',
+  'Umerkot','Vehari','Wah Cantonment','Wazirabad','Zhob','Ziarat',
+  'Other'
+];
+
 
 function App() {
   const [step, setStep] = useState('welcome'); // welcome, assessment, thankyou
@@ -224,12 +290,18 @@ function App() {
       <Box sx={{ maxWidth: { xs: '100%', sm: 450 }, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 2.5, px: { xs: 1, sm: 0 } }}>
         <TextField fullWidth label="Your Name" variant="outlined" value={userInfo.name} onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })} />
 
-        <FormControl fullWidth>
-          <InputLabel id="department-label">Department</InputLabel>
-          <Select labelId="department-label" value={userInfo.department} label="Department" onChange={(e) => setUserInfo({ ...userInfo, department: e.target.value })}>
-            {departmentOptions.map(dept => <MenuItem key={dept} value={dept}>{dept}</MenuItem>)}
-          </Select>
-        </FormControl>
+        {/* Updated to Autocomplete for Department */}
+        <Autocomplete
+          disablePortal
+          id="department-select"
+          options={departmentOptions}
+          value={userInfo.department || null}
+          onChange={(event, newValue) => {
+            setUserInfo({ ...userInfo, department: newValue || '' });
+          }}
+          renderInput={(params) => <TextField {...params} label="Department" />}
+          fullWidth
+        />
 
         <FormControl fullWidth>
           <InputLabel id="organization-label">Organization</InputLabel>
@@ -238,12 +310,18 @@ function App() {
           </Select>
         </FormControl>
 
-        <FormControl fullWidth>
-          <InputLabel id="location-label">Location</InputLabel>
-          <Select labelId="location-label" value={userInfo.location} label="Location" onChange={(e) => setUserInfo({ ...userInfo, location: e.target.value })}>
-            {locationOptions.map(loc => <MenuItem key={loc} value={loc}>{loc}</MenuItem>)}
-          </Select>
-        </FormControl>
+        {/* Updated to Autocomplete for Location */}
+        <Autocomplete
+          disablePortal
+          id="location-select"
+          options={locationOptions}
+          value={userInfo.location || null}
+          onChange={(event, newValue) => {
+            setUserInfo({ ...userInfo, location: newValue || '' });
+          }}
+          renderInput={(params) => <TextField {...params} label="Location" />}
+          fullWidth
+        />
 
         {error && <Alert severity="error">{error}</Alert>}
         <Button variant="contained" size="large" color="primary" onClick={handleStart} startIcon={<RocketLaunchIcon />} sx={{ mt: 2, py: 1.5, width: { xs: '100%', sm: 'auto' }, alignSelf: 'center' }}>
