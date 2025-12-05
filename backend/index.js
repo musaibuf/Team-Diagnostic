@@ -76,8 +76,8 @@ async function appendToSheet(data) {
   }
 }
 
-// --- Your other endpoints (submit, filter-options, dashboard-stats, etc.) are unchanged ---
-// Make sure to include them here.
+// --- Endpoints ---
+
 app.post('/api/submit', async (req, res) => {
     const { name, department, organization, location, answers } = req.body;
     if (!name || !department || !organization || !location || !answers) {
@@ -135,7 +135,7 @@ app.get('/api/dashboard-stats', async (req, res) => {
             return res.json({
                 totalSubmissions: 0, sectionScores: {}, overallScore: 0,
                 highestScoringSection: { name: 'N/A', score: 0 }, lowestScoringSection: { name: 'N/A', score: 0 },
-                sectionCounts: {}, topStrengths: [], topProblems: [], performanceByDept: {}
+                sectionCounts: {}, topStrengths: [], topProblems: [], performanceByDept: {}, allQuestions: []
             });
         }
         const processRows = (filteredRows) => {
@@ -153,7 +153,16 @@ app.get('/api/dashboard-stats', async (req, res) => {
                     }
                 }
             });
-            const allQuestions = Object.entries(questionCounts).map(([id, counts]) => ({ id, text: questionMap[id], yesCount: counts.Yes, noCount: counts.No }));
+            
+            // --- UPDATED: Added maybeCount and included allQuestions in return ---
+            const allQuestions = Object.entries(questionCounts).map(([id, counts]) => ({ 
+                id, 
+                text: questionMap[id], 
+                yesCount: counts.Yes, 
+                noCount: counts.No,
+                maybeCount: counts.Maybe 
+            }));
+            
             const topStrengths = [...allQuestions].sort((a, b) => b.yesCount - a.yesCount).slice(0, 5).filter(q => q.yesCount > 0);
             const topProblems = [...allQuestions].sort((a, b) => b.noCount - a.noCount).slice(0, 5).filter(q => q.noCount > 0);
             const sectionScores = {};
@@ -164,8 +173,10 @@ app.get('/api/dashboard-stats', async (req, res) => {
             });
             const scores = Object.values(sectionScores);
             const overallScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
-            return { sectionScores, overallScore, topStrengths, topProblems, sectionCounts };
+            
+            return { sectionScores, overallScore, topStrengths, topProblems, sectionCounts, allQuestions };
         };
+        
         const mainResults = processRows(rows);
         let highest = { name: 'N/A', score: -1 };
         let lowest = { name: 'N/A', score: 101 };

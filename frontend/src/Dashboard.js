@@ -4,7 +4,7 @@ import axios from 'axios';
 import {
   Box, Drawer, AppBar, Toolbar, List, ListItem, ListItemButton, ListItemIcon,
   ListItemText, Typography, CssBaseline, Paper, FormControl, InputLabel,
-  Select, MenuItem, Button
+  Select, MenuItem, Button, Collapse
 } from '@mui/material';
 import { createTheme, ThemeProvider, responsiveFontSizes } from '@mui/material/styles';
 
@@ -14,6 +14,10 @@ import InsightsIcon from '@mui/icons-material/Insights';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import PieChartIcon from '@mui/icons-material/PieChart';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import ListIcon from '@mui/icons-material/List';
 
 const drawerWidth = 280;
 
@@ -80,7 +84,8 @@ carneliantheme = responsiveFontSizes(carneliantheme);
 function DashboardLayout() {
   const [filters, setFilters] = useState({ department: 'all', location: 'all' });
   const [filterOptions, setFilterOptions] = useState({ departments: [], locations: [] });
-  const location = useLocation(); // Hook to get the current URL path
+  const [questionsOpen, setQuestionsOpen] = useState(false); // State for dropdown
+  const location = useLocation();
 
   const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
@@ -94,19 +99,19 @@ function DashboardLayout() {
     fetchFilterOptions();
   }, [fetchFilterOptions]);
 
-  // ====== THIS IS THE FIX (Part 1) ======
-  // This effect checks if the user has navigated to the comparison page.
-  // If so, it automatically resets the department filter to 'all'.
   useEffect(() => {
     if (location.pathname === '/dashboard/comparison') {
       setFilters(prevFilters => ({ ...prevFilters, department: 'all' }));
     }
   }, [location.pathname]);
 
-
   const handleFilterChange = (event) => {
     const { name, value } = event.target;
     setFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleQuestionsClick = () => {
+    setQuestionsOpen(!questionsOpen);
   };
 
   const sidebarLinks = [
@@ -114,6 +119,10 @@ function DashboardLayout() {
     { text: 'Section Breakdown', path: '/dashboard/breakdown', icon: <PieChartIcon /> },
     { text: 'Actionable Insights', path: '/dashboard/insights', icon: <InsightsIcon /> },
     { text: 'Department Comparison', path: '/dashboard/comparison', icon: <BarChartIcon /> },
+  ];
+
+  const questionSections = [
+    'Goals', 'Roles', 'Procedures', 'Internal Relationships', 'External Relationships'
   ];
 
   return (
@@ -150,14 +159,43 @@ function DashboardLayout() {
                   </ListItemButton>
                 </ListItem>
               ))}
+
+              {/* Collapsible Question Analysis Menu */}
+              <ListItem disablePadding>
+                <ListItemButton onClick={handleQuestionsClick}>
+                  <ListItemIcon>
+                    <AssignmentIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Question Analysis" />
+                  {questionsOpen ? <ExpandLess /> : <ExpandMore />}
+                </ListItemButton>
+              </ListItem>
+
+              <Collapse in={questionsOpen} timeout="auto" unmountOnExit>
+                <List component="div" disablePadding>
+                  {questionSections.map((section) => (
+                    <ListItemButton
+                      key={section}
+                      component={Link}
+                      to={`/dashboard/questions/${encodeURIComponent(section)}`}
+                      sx={{ pl: 4 }}
+                      selected={location.pathname === `/dashboard/questions/${encodeURIComponent(section)}`}
+                    >
+                      <ListItemIcon>
+                        <ListIcon fontSize="small" />
+                      </ListItemIcon>
+                      <ListItemText primary={section} />
+                    </ListItemButton>
+                  ))}
+                </List>
+              </Collapse>
+
             </List>
           </Box>
         </Drawer>
         <Box component="main" sx={{ flexGrow: 1, p: 3, backgroundColor: 'background.default', minHeight: '100vh' }}>
           <Toolbar />
           <Paper sx={{ p: 2, display: 'flex', flexWrap: 'wrap', gap: 2, mb: 3 }}>
-            {/* ====== THIS IS THE FIX (Part 2) ====== */}
-            {/* The 'disabled' prop is now conditional based on the current page path */}
             <FormControl 
               sx={{ flex: '1 1 200px' }} 
               disabled={location.pathname === '/dashboard/comparison'}
