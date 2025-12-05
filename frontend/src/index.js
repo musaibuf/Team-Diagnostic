@@ -4,11 +4,12 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { CssBaseline } from '@mui/material';
 
 import App from './App';
-import Dashboard from './Dashboard';
+import Dashboard from './Dashboard'; // This is your DashboardLayout
 import DashboardOverview from './DashboardOverview';
 import SectionBreakdown from './SectionBreakdown';
 import ActionableInsights from './ActionableInsights';
-import DepartmentComparison from './DepartmentComparison'; // <-- RENAMED
+import DepartmentComparison from './DepartmentComparison';
+import QuestionAnalysis from './QuestionAnalysis'; // <--- 1. IMPORT THE NEW COMPONENT
 
 const router = createBrowserRouter([
   {
@@ -22,7 +23,10 @@ const router = createBrowserRouter([
       { index: true, element: <DashboardOverview /> },
       { path: "breakdown", element: <SectionBreakdown /> },
       { path: "insights", element: <ActionableInsights /> },
-      { path: "comparison", element: <DepartmentComparison /> }, // <-- RENAMED
+      { path: "comparison", element: <DepartmentComparison /> },
+      
+      // <--- 2. ADD THIS NEW ROUTE HERE
+      { path: "questions/:sectionId", element: <QuestionAnalysis /> }, 
     ]
   },
 ]);
