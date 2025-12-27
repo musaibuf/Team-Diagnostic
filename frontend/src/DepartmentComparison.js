@@ -39,6 +39,9 @@ export default function DepartmentComparison() {
     }],
   };
 
+  const numDepartments = performanceByDeptData.labels.length;
+  const dynamicHeight = Math.max(600, numDepartments * 35);
+
   if (loading || !stats) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '50vh' }}>
@@ -52,9 +55,9 @@ export default function DepartmentComparison() {
       <Typography variant="h5" sx={{ mb: 3, color: 'secondary.main' }}>
         Department Comparison
       </Typography>
-      <Paper sx={{ p: 3, height: 650 }}>
+      <Paper sx={{ p: 3, height: dynamicHeight + 80 }}>
         <Typography variant="h6">Team Effectiveness by Department</Typography>
-        <Box sx={{ height: 570, mt: 2 }}>
+        <Box sx={{ height: dynamicHeight, mt: 2 }}>
           <Bar
             key={`comparison-bar-${stats.totalSubmissions}-${JSON.stringify(filters)}`}
             data={performanceByDeptData}
@@ -62,6 +65,12 @@ export default function DepartmentComparison() {
               indexAxis: 'y',
               responsive: true,
               maintainAspectRatio: false,
+              layout: {
+                padding: {
+                  left: 10,
+                  right: 10
+                }
+              },
               plugins: { 
                 legend: { display: false },
                 tooltip: {
@@ -75,16 +84,30 @@ export default function DepartmentComparison() {
                 y: {
                   ticks: {
                     autoSkip: false,
+                    maxRotation: 0,
+                    minRotation: 0,
                     font: {
-                      size: 10
-                    }
+                      size: 11
+                    },
+                    padding: 5
+                  },
+                  grid: {
+                    display: true,
+                    drawBorder: true
                   }
                 },
                 x: {
                   beginAtZero: true,
-                  max: 100
+                  max: 100,
+                  ticks: {
+                    stepSize: 10
+                  },
+                  grid: {
+                    display: true
+                  }
                 }
-              }
+              },
+              barThickness: 20
             }}
           />
         </Box>
