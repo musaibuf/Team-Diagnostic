@@ -9,7 +9,6 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-// ====== THIS IS THE FIX ======
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
 
 export default function DepartmentComparison() {
@@ -20,7 +19,6 @@ export default function DepartmentComparison() {
   const fetchStats = useCallback(() => {
     setLoading(true);
     const params = new URLSearchParams({ ...filters, department: 'all' }).toString();
-    // Use the API_URL variable
     axios.get(`${API_URL}/api/dashboard-stats?${params}`)
       .then(response => setStats(response.data))
       .finally(() => setLoading(false));
@@ -54,9 +52,9 @@ export default function DepartmentComparison() {
       <Typography variant="h5" sx={{ mb: 3, color: 'secondary.main' }}>
         Department Comparison
       </Typography>
-      <Paper sx={{ p: 3, height: 400 }}>
+      <Paper sx={{ p: 3, height: 650 }}>
         <Typography variant="h6">Team Effectiveness by Department</Typography>
-        <Box sx={{ height: 320, mt: 2 }}>
+        <Box sx={{ height: 570, mt: 2 }}>
           <Bar
             key={`comparison-bar-${stats.totalSubmissions}-${JSON.stringify(filters)}`}
             data={performanceByDeptData}
@@ -64,7 +62,29 @@ export default function DepartmentComparison() {
               indexAxis: 'y',
               responsive: true,
               maintainAspectRatio: false,
-              plugins: { legend: { display: false } }
+              plugins: { 
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    title: (context) => context[0].label,
+                    label: (context) => `Overall Score: ${context.parsed.x}`
+                  }
+                }
+              },
+              scales: {
+                y: {
+                  ticks: {
+                    autoSkip: false,
+                    font: {
+                      size: 10
+                    }
+                  }
+                },
+                x: {
+                  beginAtZero: true,
+                  max: 100
+                }
+              }
             }}
           />
         </Box>
